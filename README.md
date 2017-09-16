@@ -1,2 +1,2 @@
 # ssw555project
-Repo for project for SSW555 class
+Command line application to discover errors and anomalies in GEDCOM genealogoy files.  For the "Agile Methods for Software Dev" class at Stevens.
