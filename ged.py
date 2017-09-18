@@ -166,8 +166,8 @@ def pretty_print(gedout):
             row_id = key
             row_name = entry["NAME"] if "NAME" in entry else "N/A"
             row_gender = entry["SEX"] if "SEX" in entry else "N/A"
-            row_child = entry["FAMC"] if "FAMC" in entry else "N/A"
-            row_spouse = entry["FAMS"] if "FAMS" in entry else "N/A"
+            row_child = ("{'" + entry["FAMC"] + "'}") if "FAMC" in entry else "N/A"
+            row_spouse = ("{'" + entry["FAMS"] + "'}") if "FAMS" in entry else "N/A"
             row_alive = "False" if "DEAT" in entry else "True"
 
             row_bday = "N/A"
