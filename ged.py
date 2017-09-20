@@ -154,6 +154,10 @@ def parse_ged(gedlines):
                 output[ind][zero[2]][parent[1]] = current[2]
     return output
 
+def validate_ged(ged):
+    #-----ADD CODE HERE-----
+
+
 #Pretty print the GEDCOM after parsing
 def pretty_print(gedout):
     if "individuals" in gedout and len(gedout["individuals"]) > 0:
@@ -260,4 +264,6 @@ def pretty_print(gedout):
     
 #Main function 
 if __name__ == "__main__":
-    pretty_print(parse_ged(read_ged('./testfiles/')))
+    ged = parse_ged(read_ged('./testfiles/'))
+    validated = validate_ged(ged)
+    pretty_print(validated)
