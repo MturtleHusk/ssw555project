@@ -37,14 +37,14 @@ def record_from_tag(tag):
 
 
 #Prints the contents of a .ged file in a directory (default current working directory)
-def read_ged(directory="."):
+def read_ged(directory="./"):
     ged = ""
     for file in listdir(directory):
         if not isfile(join(directory, file)):
             continue
         
         if file.split(".")[-1] == "ged":
-            ged = open(file,"r").read()
+            ged = open(directory + file,"r").read()
             break
     return ged.split("\n")
 
@@ -260,4 +260,4 @@ def pretty_print(gedout):
     
 #Main function 
 if __name__ == "__main__":
-    pretty_print(parse_ged(read_ged()))
+    pretty_print(parse_ged(read_ged('./testfiles/')))
