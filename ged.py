@@ -376,9 +376,12 @@ if __name__ == "__main__":
         ged = parse_ged(rawlines)
         errs = validate_ged(ged)
 
+        pretty_print(ged)
+        print('')
+        
         if len(errs) > 0:
             print('Errors/Anomalies:')
             for s in errs:
-                print('\t' + s)
+                print(' ' + s)
         else:
             print('No errors/anomalies.')
