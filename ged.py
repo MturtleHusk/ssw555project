@@ -3,6 +3,7 @@ from os.path import isfile, join
 from prettytable import PrettyTable
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+import traceback
 
 #All valid records. Format is [string level, string tag, string[] valid parent records]
 records = [
@@ -27,6 +28,10 @@ records = [
 #Tags that can have multiple values go here
 multi = ["CHIL"]
 
+
+
+
+
 #Given a tag name, returns the record entry
 def record_from_tag(tag):
     for record in records:
@@ -36,17 +41,45 @@ def record_from_tag(tag):
     return []
 
 
+
+
+
+#Returns an int value signifying the comparison between two dates
+#-1 = first date before second date, 0 = dates are equal, 1 = first date after second date, -2 = error parsing dates
+def compare_dates(d1, d2, form="%d %b %Y"):
+    try:
+        dt1 = datetime.strptime(d1, form)
+        dt2 = datetime.strptime(d2, form)
+
+        return -1 if dt1 < dt2 else (0 if dt1 == dt2 else 1)
+    except Exception as e:
+        traceback.print_exc()
+        return -2
+
+
+
+
 #Prints the contents of a .ged file in a directory (default current working directory)
-def read_ged(directory="./"):
-    ged = ""
-    for file in listdir(directory):
-        if not isfile(join(directory, file)):
-            continue
-        
-        if file.split(".")[-1] == "ged":
-            ged = open(directory + file,"r").read()
-            break
-    return ged.split("\n")
+def read_ged(filename='test.ged'):
+    if len(filename) == 0:
+        for file in listdir('./'):
+            if not isfile(file):
+                continue
+            if file.split('.')[-1] == 'ged':
+                return open(file, 'r').read()
+    else:
+        if not isfile(filename):
+            return ''
+
+        if filename.split('.')[-1] == 'ged':
+            ged = open(filename, 'r').read()
+            return ged
+    
+    return ''
+
+
+
+
 
 
 #Parse GEDCOM input into a usable format
@@ -64,7 +97,6 @@ def parse_ged(gedlines):
         args = ""
         
         attr = gedline.split(" ")
-        
         if attr[0] == "0" and (attr[-1] == "INDI" or attr[-1] == "FAM"):
             level = "0"
             tag = attr[-1]
@@ -154,8 +186,62 @@ def parse_ged(gedlines):
                 output[ind][zero[2]][parent[1]] = current[2]
     return output
 
+
+
+
+
 def validate_ged(ged):
-    #-----ADD CODE HERE-----
+    if not 'individuals' in ged or not 'families' in ged:
+        return
+
+    out = []
+
+    #-----START BIRTH BEFORE MARRIAGE: STORY US02-----#
+    def check_us02():
+        if len(ged['families']) > 0:
+            for key in ged['families']:
+                fam = ged['families'][key]
+                
+                if not 'MARR' in fam or not 'HUSB' in fam or not 'WIFE' in fam:
+                    continue
+                
+                for person in ['HUSB','WIFE']:
+                    if fam[person] in ged['individuals']:
+                        indi = ged['individuals'][fam[person]]
+                    
+                        if 'BIRT' in indi:
+                            cmpr = compare_dates(fam['MARR'], indi['BIRT'])
+                            
+                            if cmpr == -1:
+                                out.append('Error US02: Birth date of {} ({}) occurs after {} marriage date'.format(indi['NAME'] if 'NAME' in indi else '<name not found>', fam[person], 'his' if person == 'HUSB' else 'her'))
+    check_us02()
+    #-----END BIRTH BEFORE MARRIAGE: STORY US02-----#     
+
+    #-----START DIVORCE BEFORE MARRIAGE: STORY US04-----#
+    def check_us04():
+        if len(ged['families']) > 0:
+            for key in ged['families']:
+                fam = ged['families'][key]
+
+                if not 'DIV' in fam or not 'MARR' in fam or not 'HUSB' in fam or not 'WIFE' in fam:
+                    continue
+
+                if compare_dates(fam['MARR'], fam['DIV']) == 1:
+                    husb = ged['individuals'][fam['HUSB']]['NAME'] if fam['HUSB'] in ged['individuals'] and 'NAME' in ged['individuals'][fam['HUSB']] else '<Husband not found>'
+                    wife = ged['individuals'][fam['WIFE']]['NAME'] if fam['WIFE'] in ged['individuals'] and 'NAME' in ged['individuals'][fam['WIFE']] else '<Wife not found>'
+
+                    out.append('Error US04: Divorce date of {} and {} ({}, {}) occurs before marriage date'.format(husb, wife, fam['HUSB'], fam['WIFE']))
+    check_us04()
+    #-----END DIVORCE BEFORE MARRAIGE: STORY US04-----#
+
+
+    #-----ADD CODE HERE-----#
+
+    return out
+
+
+
+
 
 
 #Pretty print the GEDCOM after parsing
@@ -259,11 +345,38 @@ def pretty_print(gedout):
         for row in rows:
             fx.add_row(row)
 
-        print("Families")
+        print('Families')
         print(fx)
+
+#credit to dideler from https://gist.github.com/dideler/2395703
+def getopts(argv):
+    opts = {}  # Empty dictionary to store key-value pairs.
+    while argv:  # While there are arguments left to parse...
+        if argv[0][0] == '-':  # Found a "-name value" pair.
+            opts[argv[0]] = argv[1]  # Add key and value to the dictionary.
+        argv = argv[1:]  # Reduce the argument list by copying it starting from index 1.
+    return opts
     
 #Main function 
 if __name__ == "__main__":
-    ged = parse_ged(read_ged('./testfiles/'))
-    validated = validate_ged(ged)
-    pretty_print(validated)
+    filename = ''
+
+    from sys import argv
+    args = getopts(argv)
+    
+    if len(args) > 0 and '-f' in args:
+        filename = args['-f']
+    
+    raw = read_ged() if len(filename) == 0 else read_ged(filename)
+
+    if len(raw) > 0:
+        rawlines = raw.split('\n')
+        ged = parse_ged(rawlines)
+        errs = validate_ged(ged)
+
+        if len(errs) > 0:
+            print('Errors/Anomalies:')
+            for s in errs:
+                print('\t' + s)
+        else:
+            print('No errors/anomalies.')
