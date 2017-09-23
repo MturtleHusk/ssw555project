@@ -196,7 +196,7 @@ def validate_ged(ged):
 
     out = []
 
-    #-----START BIRTH BEFORE MARRIAGE: STORY US02-----#
+    #-----START BIRTH BEFORE MARRIAGE (US02)-----#
     def check_us02():
         if len(ged['families']) > 0:
             for key in ged['families']:
@@ -215,9 +215,9 @@ def validate_ged(ged):
                             if cmpr == -1:
                                 out.append('Error US02: Birth date of {} ({}) occurs after {} marriage date'.format(indi['NAME'] if 'NAME' in indi else '<name not found>', fam[person], 'his' if person == 'HUSB' else 'her'))
     check_us02()
-    #-----END BIRTH BEFORE MARRIAGE: STORY US02-----#     
+    #-----END BIRTH BEFORE MARRIAGE (US02)-----#     
 
-    #-----START DIVORCE BEFORE MARRIAGE: STORY US04-----#
+    #-----START DIVORCE BEFORE MARRIAGE (US04)-----#
     def check_us04():
         if len(ged['families']) > 0:
             for key in ged['families']:
@@ -232,10 +232,12 @@ def validate_ged(ged):
 
                     out.append('Error US04: Divorce date of {} and {} ({}, {}) occurs before marriage date'.format(husb, wife, fam['HUSB'], fam['WIFE']))
     check_us04()
-    #-----END DIVORCE BEFORE MARRAIGE: STORY US04-----#
+    #-----END DIVORCE BEFORE MARRAIGE (US04)-----#
 
 
-    #-----ADD CODE HERE-----#
+    #---------------#
+    # add code here #
+    #---------------#
 
     return out
 
