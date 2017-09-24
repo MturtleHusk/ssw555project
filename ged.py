@@ -197,54 +197,21 @@ def validate_ged(ged):
 
     out = []
 
-    #-----START BIRTH BEFORE MARRIAGE (US02)-----#
-    def check_us02():
-        if len(ged['families']) > 0:
-            for key in ged['families']:
-                fam = ged['families'][key]
-                
-                if not 'MARR' in fam or not 'HUSB' in fam or not 'WIFE' in fam:
-                    continue
-                
-                for person in ['HUSB','WIFE']:
-                    if fam[person] in ged['individuals']:
-                        indi = ged['individuals'][fam[person]]
-                    
-                        if 'BIRT' in indi:
-                            cmpr = compare_dates(fam['MARR'], indi['BIRT'])
-                            
-                            if cmpr == -1:
-                                out.append('Error US02: Birth date of {} ({}) occurs after {} marriage date'.format(indi['NAME'] if 'NAME' in indi else '<name not found>', fam[person], 'his' if person == 'HUSB' else 'her'))
-    check_us02()
-    #-----END BIRTH BEFORE MARRIAGE (US02)-----#     
-
-    #-----START DIVORCE BEFORE MARRIAGE (US04)-----#
-    def check_us04():
-        if len(ged['families']) > 0:
-            for key in ged['families']:
-                fam = ged['families'][key]
-
-                if not 'DIV' in fam or not 'MARR' in fam or not 'HUSB' in fam or not 'WIFE' in fam:
-                    continue
-
-                if compare_dates(fam['MARR'], fam['DIV']) == 1:
-                    husb = ged['individuals'][fam['HUSB']]['NAME'] if fam['HUSB'] in ged['individuals'] and 'NAME' in ged['individuals'][fam['HUSB']] else '<Husband not found>'
-                    wife = ged['individuals'][fam['WIFE']]['NAME'] if fam['WIFE'] in ged['individuals'] and 'NAME' in ged['individuals'][fam['WIFE']] else '<Wife not found>'
-
-                    out.append('Error US04: Divorce date of {} and {} ({}, {}) occurs before marriage date'.format(husb, wife, fam['HUSB'], fam['WIFE']))
-    check_us04()
-    #-----END DIVORCE BEFORE MARRAIGE (US04)-----#
-
-
-    #---------------#
-    # add code here #
-    #---------------#
+    #check us02 and us04
+    import mm 
+    out += mm.us02(ged)
+    out += mm.us04(ged)
 
     # check us17
     out += yl.us17(ged)
 
     # check us18
     out += yl.us18(ged)
+
+
+    #---------------#
+    # add code here #
+    #---------------#
 
     return out
 
