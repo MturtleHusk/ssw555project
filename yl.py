@@ -1,11 +1,15 @@
 # US17: no marriage to descendant
 def us17(ged):
+    out = []
+
     # retrieve the children's IDs of the individual
     def get_children(ind):
         children = []
         for f_id in ged["families"]:
             f = ged["families"][f_id]
             if f["HUSB"] != ind and f["WIFE"] != ind:
+                continue
+            if "CHIL" not in f:
                 continue
             children += f["CHIL"]
         return children
@@ -27,15 +31,23 @@ def us17(ged):
 
         # check if the husband of wife is the descendant of another
         if husband_id in get_descendants(wife_id):
-            print("Error US17: {} ({}) marries her descendants."
-                  .format(ged["individuals"][wife_id]["NAME"], wife_id))
+            out.append("Error US17: {} ({}) marries her descendants."
+                       .format(ged["individuals"][wife_id]["NAME"], wife_id))
+            # print("Error US17: {} ({}) marries her descendants."
+            #       .format(ged["individuals"][wife_id]["NAME"], wife_id))
         if wife_id in get_descendants(husband_id):
-            print("Error US17: {} ({}) marries his descendants."
-                  .format(ged["individuals"][husband_id]["NAME"], husband_id))
+            out.append("Error US17: {} ({}) marries his descendants."
+                       .format(ged["individuals"][husband_id]["NAME"], husband_id))
+            # print("Error US17: {} ({}) marries his descendants."
+            #       .format(ged["individuals"][husband_id]["NAME"], husband_id))
+
+    return out
 
 
 # US18: siblings should not marry
 def us18(ged):
+    out = []
+
     # retrieve all the siblings' IDs of the individual
     def get_siblings(ind):
         siblings = []
@@ -51,6 +63,8 @@ def us18(ged):
         #         break
         for f_id in ged["families"]:
             family = ged["families"][f_id]
+            if "CHIL" not in family:
+                continue
             if ind in family["CHIL"]:
                 for child in family["CHIL"]:
                     if child == ind:
@@ -65,6 +79,11 @@ def us18(ged):
         husband_id = family["HUSB"]
         wife_id = family["WIFE"]
 
-    if husband_id in get_siblings(wife_id):
-        print("Error US18: {} ({}) should not marry {} ({}), because they are siblings."
-            .format(ged["individuals"][husband_id]["NAME"], husband_id, ged["individuals"][wife_id]["NAME"], wife_id))
+        if husband_id in get_siblings(wife_id):
+            out.append("Error US18: {} ({}) should not marry {} ({}), because they are siblings."
+                       .format(ged["individuals"][husband_id]["NAME"], husband_id,
+                               ged["individuals"][wife_id]["NAME"], wife_id))
+        # print("Error US18: {} ({}) should not marry {} ({}), because they are siblings."
+        #     .format(ged["individuals"][husband_id]["NAME"], husband_id, ged["individuals"][wife_id]["NAME"], wife_id))
+
+    return out

@@ -4,6 +4,7 @@ from prettytable import PrettyTable
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import traceback
+import yl
 
 #All valid records. Format is [string level, string tag, string[] valid parent records]
 records = [
@@ -238,6 +239,12 @@ def validate_ged(ged):
     #---------------#
     # add code here #
     #---------------#
+
+    # check us17
+    out += yl.us17(ged)
+
+    # check us18
+    out += yl.us18(ged)
 
     return out
 
