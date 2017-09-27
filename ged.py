@@ -213,6 +213,10 @@ def validate_ged(ged):
     # add code here #
     #---------------#
 
+    import mi
+    out += mi.us05(ged)
+    out += mi.us10(ged)
+
     return out
 
 
