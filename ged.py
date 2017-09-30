@@ -57,6 +57,13 @@ def compare_dates(d1, d2, form="%d %b %Y"):
         traceback.print_exc()
         return -2
 
+#Takes 2 dates and finds the number of days between them
+#form = 1 Jan 2000
+def date_difference(d1, d2, form="%d %b %Y"):
+    d1 = datetime.strptime(d1, form)
+    d2 = datetime.strptime(d2, form)
+    return abs((d2 - d1).days)
+
 
 
 
@@ -213,6 +220,7 @@ def validate_ged(ged):
     # add code here #
     #---------------#
 
+    #check us05 and us10
     import mi
     out += mi.us05(ged)
     out += mi.us10(ged)
