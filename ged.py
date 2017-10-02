@@ -347,7 +347,7 @@ def getopts(argv):
     
 #Main function 
 if __name__ == "__main__":
-    filename = ''
+    filename = 'test.ged'
 
     from sys import argv
     args = getopts(argv)
