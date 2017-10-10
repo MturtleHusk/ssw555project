@@ -1,3 +1,6 @@
+from datetime import date
+from datetime import datetime
+
 # US17: no marriage to descendant
 def us17(ged):
     out = []
@@ -33,13 +36,9 @@ def us17(ged):
         if husband_id in get_descendants(wife_id):
             out.append("Error US17: {} ({}) marries her descendants."
                        .format(ged["individuals"][wife_id]["NAME"], wife_id))
-            # print("Error US17: {} ({}) marries her descendants."
-            #       .format(ged["individuals"][wife_id]["NAME"], wife_id))
         if wife_id in get_descendants(husband_id):
             out.append("Error US17: {} ({}) marries his descendants."
                        .format(ged["individuals"][husband_id]["NAME"], husband_id))
-            # print("Error US17: {} ({}) marries his descendants."
-            #       .format(ged["individuals"][husband_id]["NAME"], husband_id))
 
     return out
 
@@ -52,15 +51,6 @@ def us18(ged):
     def get_siblings(ind):
         siblings = []
 
-        # get the parents' IDs
-        # father_id = ""
-        # mother_id = ""
-        # for f_id in ged["families"]:
-        #     family = ged["families"][f_id]
-        #     if ind in family["CHIL"]:
-        #         father_id = family["HUSB"]
-        #         mother_id = family["WIFE"]
-        #         break
         for f_id in ged["families"]:
             family = ged["families"][f_id]
             if "CHIL" not in family:
@@ -83,7 +73,61 @@ def us18(ged):
             out.append("Error US18: {} ({}) should not marry {} ({}), because they are siblings."
                        .format(ged["individuals"][husband_id]["NAME"], husband_id,
                                ged["individuals"][wife_id]["NAME"], wife_id))
-        # print("Error US18: {} ({}) should not marry {} ({}), because they are siblings."
-        #     .format(ged["individuals"][husband_id]["NAME"], husband_id, ged["individuals"][wife_id]["NAME"], wife_id))
 
     return out
+
+
+# US07: less than 150 years old
+def us07(ged):
+    out = []
+
+    for ind_id, individual in ged["individuals"].items():
+        birth_date = datetime.strptime(individual["BIRT"], "%d %b %Y").date()
+        death_date = (datetime.strptime(individual["DEAT"], "%d %b %Y").date()
+                      if "DEAT" in individual else date.today())
+        if not dates_within(birth_date, death_date, 150, 'years'):
+            out.append("Anomaly US07: {} ({}) is more than 150 years old."
+                       .format(individual["NAME"], ind_id))
+
+    return out
+
+
+# US08: birth before marriage of parents
+def us08(ged):
+    out = []
+
+    for f_id, family in ged["families"].items():
+        # if there is no child in this family
+        if "CHIL" not in family:
+            continue
+
+        # get the marriage date and divorce date (if divorced) of this family
+        marriage_date = datetime.strptime(family["MARR"], "%d %b %Y").date()
+        divorce_date = None
+        if "DIV" in family:
+            divorce_date = datetime.strptime(family["DIV"], "%d %b %Y").date()
+
+        for child in family["CHIL"]:
+            # get the birth date of this child
+            birth_date = datetime.strptime(ged["individuals"][child]["BIRT"], "%d %b %Y").date()
+
+            if birth_date < marriage_date:
+                out.append("Anomaly US08: {} ({}) was born before marriage of parents.".
+                           format(ged["individuals"][child]["NAME"], child))
+            elif divorce_date and (not dates_within(birth_date, divorce_date, 9, "months")):
+                out.append("Anomaly US08: {} ({}) was born after more than 9 months of divorce of parents.".
+                           format(ged["individuals"][child]["NAME"], child))
+
+    return out
+
+
+def dates_within(dt1, dt2, limit, units):
+
+    '''
+    return True if dt1 and dt2 are within limit units, where:
+    dt1, dt2 are instances of datetime
+    limit is a number units is a string in ('days', 'months', 'years')
+    '''
+
+    conversion = {'days':1, 'months':30.4, 'years':365.25}
+    return (abs((dt1 - dt2).days) / conversion[units]) <= limit
