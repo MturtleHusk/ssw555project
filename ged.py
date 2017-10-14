@@ -220,10 +220,14 @@ def validate_ged(ged):
     # add code here #
     #---------------#
 
-    #check us05 and us10
+    #Sprint 1, check us05 and us10
     import mi
     out += mi.us05(ged)
     out += mi.us10(ged)
+
+    #Sprint 2, check us06 and us09
+    out += mi.us06(ged)
+    out += mi.us09(ged)
 
     return out
 
