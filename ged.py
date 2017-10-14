@@ -86,7 +86,6 @@ def read_ged(filename='test.ged'):
 
 
 
-
 #Parse GEDCOM input into a usable format
 def parse_ged(gedlines):
     if len(gedlines) == 0:
@@ -151,44 +150,51 @@ def parse_ged(gedlines):
         if len(line) == 0:
             continue
         
-        current = parse_line(line)
+        c = parse_line(line)
 
-        if current[0] == "0":
-            if current[1] != "INDI" and current[1] != "FAM":
+        if c[0] == "0":
+            if c[1] != "INDI" and c[1] != "FAM":
                 continue
             
-            ind = "individuals" if current[1] == "INDI" else "families"
-            output[ind][current[2]] = {}
-        elif current[0] == "1" or current[0] == "2":
-            parent = parse_line(find_parent(i))
+            ind = "individuals" if c[1] == "INDI" else "families"
+            
+            if c[2] in output[ind]:
+                if 'dup' in output[ind][c[2]]:
+                    output[ind][c[2]]['dup'].append({})
+                else:
+                    output[ind][c[2]]['dup'] = [{}]
+            else:
+                output[ind][c[2]] = {}
+        elif c[0] == "1" or c[0] == "2":
+            p = parse_line(find_parent(i))
 
-            if current[0] == "1":
-                ind = "individuals" if parent[1] == "INDI" else "families"
+            if c[0] == "1":
+                ind = "individuals" if p[1] == "INDI" else "families"
 
                 #Make sure that the entry is valid and under a correct valid parent record
-                if (not [current[0], current[1]] in check) or (not parent[1] in record_from_tag(current[1])[2]) or (parent[1] != "INDI" and parent[1] != "FAM"):
+                if (not [c[0], c[1]] in check) or (not p[1] in record_from_tag(c[1])[2]) or (p[1] != "INDI" and p[1] != "FAM") \
+                    or not p[2] in output[ind]: #For some reason, the 0 <> INDI/FAM record didn't initialize an entry in the dictionary
                     continue
 
-                #For some reason, the 0 <> INDI/FAM record didn't initialize an entry in the dictionary
-                if not parent[2] in output[ind]:
-                    continue
-                
+                entry = output[ind][p[2]]['dup'][-1] if 'dup' in output[ind][p[2]] and len(output[ind][p[2]]['dup']) > 0 else output[ind][p[2]]
+
                 #If there can be multiple entries of the same tag, we store them in an array
-                if current[1] in multi:
-                    if current[1] in output[ind][parent[2]]:
-                        output[ind][parent[2]][current[1]].append(current[2])
+                if c[1] in multi:
+                    if c[1] in output[ind][p[2]]:
+                        entry[c[1]].append(c[2])
                     else:
-                        output[ind][parent[2]][current[1]] = [current[2]]
+                        entry[c[1]] = [c[2]]
                 else:
-                    output[ind][parent[2]][current[1]] = current[2]
-            elif current[0] == "2":
+                    entry[c[1]] = c[2]
+            elif c[0] == "2":
                 zero = parse_line(find_level0(i))
                 ind = "individuals" if zero[1] == "INDI" else "families"
 
-                if not [current[0], current[1]] in check:
+                if not [c[0], c[1]] in check:
                     continue
 
-                output[ind][zero[2]][parent[1]] = current[2]
+                entry = output[ind][zero[2]]['dup'][-1] if 'dup' in output[ind][zero[2]] and len(output[ind][zero[2]]['dup']) > 0 else output[ind][zero[2]]
+                entry[p[1]] = c[2]
     return output
 
 
@@ -205,6 +211,8 @@ def validate_ged(ged):
     import mm 
     out += mm.us02(ged)
     out += mm.us04(ged)
+    out += mm.us22(ged)
+    out += mm.us23(ged)
 
     import yl
     # check us17
@@ -228,15 +236,7 @@ def validate_ged(ged):
     # add code here #
     #---------------#
 
-    
-<<<<<<< HEAD
-
-    
-
-=======
->>>>>>> c2822f77090dc6b139d476f7fa482c21c37b33e4
     return out
-
 
 
 
@@ -249,39 +249,39 @@ def pretty_print(gedout):
         rows = []
 
         for key in gedout["individuals"]:
-            entry = gedout["individuals"][key]
+            val = gedout["individuals"][key]
 
-            row_id = key
-            row_name = entry["NAME"] if "NAME" in entry else "N/A"
-            row_gender = entry["SEX"] if "SEX" in entry else "N/A"
-            row_child = ("{'" + entry["FAMC"] + "'}") if "FAMC" in entry else "N/A"
-            row_spouse = ("{'" + entry["FAMS"] + "'}") if "FAMS" in entry else "N/A"
-            row_alive = "False" if "DEAT" in entry else "True"
+            for entry in ([val] + val['dup']) if 'dup' in val and len(val['dup']) > 0 else [val]:
+                row_id = key
+                row_name = entry["NAME"] if "NAME" in entry else "N/A"
+                row_gender = entry["SEX"] if "SEX" in entry else "N/A"
+                row_child = ("{'" + entry["FAMC"] + "'}") if "FAMC" in entry else "N/A"
+                row_spouse = ("{'" + entry["FAMS"] + "'}") if "FAMS" in entry else "N/A"
+                row_alive = "False" if "DEAT" in entry else "True"
 
-            row_bday = "N/A"
-            row_age = "N/A"
-            row_death = "N/A"
+                row_bday = "N/A"
+                row_age = "N/A"
+                row_death = "N/A"
 
-            if "BIRT" in entry:
-                try:
-                    #Format birthday to YYYY-MM-DD
-                    bday_time = datetime.strptime(entry["BIRT"], "%d %b %Y")
-                    row_bday = bday_time.strftime("%Y-%m-%d")
+                if "BIRT" in entry:
+                    try:
+                        #Format birthday to YYYY-MM-DD
+                        bday_time = datetime.strptime(entry["BIRT"], "%d %b %Y")
+                        row_bday = bday_time.strftime("%Y-%m-%d")
 
-                    #Calculate age
-                    row_age = relativedelta(datetime.combine(date.today(), datetime.min.time()), bday_time).years
+                        #Calculate age
+                        row_age = relativedelta(datetime.combine(date.today(), datetime.min.time()), bday_time).years
+                    except:
+                        pass
+                if "DEAT" in entry:
+                    try:
+                        #Format death date to YYYY-MM-DD
+                        death_time = datetime.strptime(entry["DEAT"], "%d %b %Y")
+                        row_death = death_time.strftime("%Y-%m-%d")
+                    except:
+                        pass
 
-                except:
-                    pass
-            if "DEAT" in entry:
-                try:
-                    #Format death date to YYYY-MM-DD
-                    death_time = datetime.strptime(entry["DEAT"], "%d %b %Y")
-                    row_death = death_time.strftime("%Y-%m-%d")
-                except:
-                    pass
-
-            rows.append([row_id, row_name, row_gender, row_bday, row_age, row_alive, row_death, row_child, row_spouse])
+                rows.append([row_id, row_name, row_gender, row_bday, row_age, row_alive, row_death, row_child, row_spouse])
         
         #Sort the rows by their IDs and then add them to the PrettyTable object
         sorted(rows,key=lambda row: int(row[0][1:]))
@@ -297,46 +297,47 @@ def pretty_print(gedout):
         rows = []
 
         for key in gedout["families"]:
-            entry = gedout["families"][key]
+            val = gedout["families"][key]
 
-            row_id = key
-            row_husband_id = entry["HUSB"] if "HUSB" in entry else "N/A"
-            row_wife_id = entry["WIFE"] if "WIFE" in entry else "N/A"
-            
-            row_children = "N/A"
-            if "CHIL" in entry:
-                row_children = "{"
-                for child in entry["CHIL"]:
-                    row_children += "'{}',".format(child)
-                row_children = row_children[:-1]
-                row_children += "}"
-            
-            row_husband_name = "N/A"
-            if row_husband_id != "N/A":
-                if row_husband_id in gedout["individuals"] and "NAME" in gedout["individuals"][row_husband_id]:
-                    row_husband_name = gedout["individuals"][row_husband_id]["NAME"]
-            
-            row_wife_name = "N/A"
-            if row_wife_id != "N/A":
-                if row_wife_id in gedout["individuals"] and "NAME" in gedout["individuals"][row_wife_id]:
-                    row_wife_name = gedout["individuals"][row_wife_id]["NAME"]
+            for entry in ([val] + val['dup']) if 'dup' in val and len(val['dup']) > 0 else [val]:
+                row_id = key
+                row_husband_id = entry["HUSB"] if "HUSB" in entry else "N/A"
+                row_wife_id = entry["WIFE"] if "WIFE" in entry else "N/A"
+                
+                row_children = "N/A"
+                if "CHIL" in entry:
+                    row_children = "{"
+                    for child in entry["CHIL"]:
+                        row_children += "'{}',".format(child)
+                    row_children = row_children[:-1]
+                    row_children += "}"
+                
+                row_husband_name = "N/A"
+                if row_husband_id != "N/A":
+                    if row_husband_id in gedout["individuals"] and "NAME" in gedout["individuals"][row_husband_id]:
+                        row_husband_name = gedout["individuals"][row_husband_id]["NAME"]
+                
+                row_wife_name = "N/A"
+                if row_wife_id != "N/A":
+                    if row_wife_id in gedout["individuals"] and "NAME" in gedout["individuals"][row_wife_id]:
+                        row_wife_name = gedout["individuals"][row_wife_id]["NAME"]
 
-            row_married = "N/A"
-            if "MARR" in entry:
-                try:
-                    marr_time = datetime.strptime(entry["MARR"], "%d %b %Y")
-                    row_married = marr_time.strftime("%Y-%m-%d")
-                except:
-                    pass
-            
-            row_divorced = "N/A"
-            if "DIV" in entry:
-                try:
-                    div_time = datetime.strptime(entry["DIV"], "%d %b %Y")
-                    row_divorced = div_time.strftime("%Y-%m-%d")
-                except:
-                    pass
-            rows.append([row_id, row_married, row_divorced, row_husband_id, row_husband_name, row_wife_id, row_wife_name, row_children])
+                row_married = "N/A"
+                if "MARR" in entry:
+                    try:
+                        marr_time = datetime.strptime(entry["MARR"], "%d %b %Y")
+                        row_married = marr_time.strftime("%Y-%m-%d")
+                    except:
+                        pass
+                
+                row_divorced = "N/A"
+                if "DIV" in entry:
+                    try:
+                        div_time = datetime.strptime(entry["DIV"], "%d %b %Y")
+                        row_divorced = div_time.strftime("%Y-%m-%d")
+                    except:
+                        pass
+                rows.append([row_id, row_married, row_divorced, row_husband_id, row_husband_name, row_wife_id, row_wife_name, row_children])
 
         #Sort the rows by their IDs and then add them to the PrettyTable object
         sorted(rows,key=lambda row: int(row[0][1:]))
@@ -345,6 +346,8 @@ def pretty_print(gedout):
 
         print('Families')
         print(fx)
+
+        
 
 #credit to dideler from https://gist.github.com/dideler/2395703
 def getopts(argv):
