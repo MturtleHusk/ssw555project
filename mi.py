@@ -1,4 +1,7 @@
 from ged import compare_dates, date_difference
+#sprint 1: stories 5 and 10
+#sprint 2: stories 6 and 9
+
 
 #Validation check for Marriage date before death date
 #Individual cannot have died before they got married
