@@ -30,8 +30,6 @@ multi = ["CHIL"]
 
 
 
-
-
 #Given a tag name, returns the record entry
 def record_from_tag(tag):
     for record in records:
