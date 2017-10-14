@@ -33,7 +33,7 @@ def us05(ged):
     return out
 
 #Validation Check to ensure divorce date happens before death
-def us06(ged)
+def us06(ged):
     out = []
 
     #search for individuals stored in 'families'
@@ -61,7 +61,7 @@ def us06(ged)
     return out
 
 #Validation check to ensure borth date takes place before death date
-def us09(ged)
+def us09(ged):
     out = []
 
     #search for individuals stored in 'families'
@@ -94,6 +94,10 @@ def us10(ged):
     output = []
     for ID in ged['families']:
         family = ged['families'][ID]
+
+        if not family['HUSB'] in ged['individuals'] or not family['WIFE'] in ged['individuals']:
+            continue
+
         husband = ged['individuals'][family['HUSB']]['NAME'] 
         wife = ged['individuals'][family['WIFE']]['NAME'] 
             
