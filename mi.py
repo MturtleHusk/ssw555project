@@ -57,7 +57,7 @@ def us06(ged):
                     compare = compare_dates(family['DIV'], individual['DEAT'])
 
                     if compare == 1:
-                        out.append('Error US06: Divorce date of {} ({}) occurs before Death date'
+                        out.append('Error US06: Divorce date of {} ({}) occurs after Death date'
                                    .format(individual['NAME'],family[person]))
     return out
 #Validation check to ensure birth date takes place before death date
@@ -115,6 +115,6 @@ def us10(ged):
 
 if __name__ == '__main__':
     from ged import parse_ged
-    with open('test.ged') as f:
+    with open('test-us06.ged') as f:
         parsed = parse_ged(f.read().split('\n'))
         print(us06(parsed))

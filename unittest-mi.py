@@ -8,7 +8,7 @@ class miTest(unittest.TestCase):
         self.assertEqual(mi.us06(
             ged.parse_ged(ged.read_ged("testfiles/test-us06.ged").split("\n"))
         ),
-        ['Error US06: Divorce date of jason /Wong/ (I01) occurs before Death date'])
+        ['Error US06: Divorce date of jason /Wong/ (I01) occurs after Death date'])
 
     def test_us09(self):
         self.assertEqual(mi.us09(
