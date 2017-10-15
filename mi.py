@@ -78,7 +78,7 @@ def us09(ged):
             #compare date stored for 'BIRT' with date for 'DEAT'
             compare = compare_dates(Ind['BIRT'], Ind['DEAT'])
             if compare == 1:
-                out.append('Error US05: Death date of {} ({}) occurs before birth date'
+                out.append('Error US09: Death date of {} ({}) occurs before birth date'
                             .format(Ind['NAME'],Ind[person]))
     return out
 
@@ -115,6 +115,6 @@ def us10(ged):
 
 if __name__ == '__main__':
     from ged import parse_ged
-    with open('test-us06.ged') as f:
+    with open('test.ged') as f:
         parsed = parse_ged(f.read().split('\n'))
         print(us06(parsed))

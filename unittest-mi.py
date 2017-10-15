@@ -4,6 +4,9 @@ import ged
 
 class miTest(unittest.TestCase):
 
+    def setUp(self):
+        pass
+
     def test_us06(self):
         self.assertEqual(mi.us06(
             ged.parse_ged(ged.read_ged("testfiles/test-us06.ged").split("\n"))
@@ -15,3 +18,6 @@ class miTest(unittest.TestCase):
             ged.parse_ged(ged.read_ged("testfiles/test-us09.ged").split("\n"))
         ),
         ['Error US09: Death date of Alex /Jones/ (3 JAN 1938) occurs before birth date'])
+
+if __name__ == '__main__':
+    unittest.main()
