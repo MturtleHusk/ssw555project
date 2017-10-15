@@ -113,8 +113,8 @@ def us10(ged):
 
     return output
 
-if __name__ == '__main__':
-    from ged import parse_ged
-    with open('test.ged') as f:
-        parsed = parse_ged(f.read().split('\n'))
-        print(us06(parsed))
+#if __name__ == '__main__':
+#    from ged import parse_ged
+#    with open('test.ged') as f:
+#        parsed = parse_ged(f.read().split('\n'))
+#        print(us06(parsed))
