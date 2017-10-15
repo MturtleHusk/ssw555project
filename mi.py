@@ -1,4 +1,5 @@
 from ged import compare_dates, date_difference
+from ged import compare_dates, date_difference
 #sprint 1: stories 5 and 10
 #sprint 2: stories 6 and 9
 
@@ -60,32 +61,25 @@ def us06(ged):
                                    .format(individual['NAME'],family[person]))
     return out
 
-#Validation check to ensure borth date takes place before death date
+#Validation check to ensure birth date takes place before death date
 def us09(ged):
     out = []
 
     #search for individuals stored in 'families'
-    for ID in ged['families']:
-        family = ged['families'][ID]
+    for ID in ged['individuals']:
+        Ind = ged['individuals'][ID]
         
         #check for appropriate tags
-        if not 'HUSB' in family or not 'WIFE' in family or not 'DIV' in family:
+        if not 'DEAT' in Ind:
             continue
 
-        #chech for Husb and Wife tags
-        for person in ['HUSB','WIFE']:
-
-            if family[person] in ged['individuals']:
-                individual = ged['individuals'][family[person]]
-
-                if 'DEAT' in individual:
-
-                    #compare date stored for 'BIRT' with date for 'DEAT'
-                    compare = compare_dates(family['BIRT'], individual['DEAT'])
-
-                    if compare == 1:
-                        out.append('Error US05: Death date of {} ({}) occurs before birth date'
-                                   .format(individual['NAME'],family[person]))
+        #check for  tag
+        for person in ['DEAT']:
+            #compare date stored for 'BIRT' with date for 'DEAT'
+            compare = compare_dates(Ind['BIRT'], Ind['DEAT'])
+            if compare == 1:
+                out.append('Error US05: Death date of {} ({}) occurs before birth date'
+                            .format(Ind['NAME'],Ind[person]))
     return out
 
 #Validation check to ensure that no marriages occur with a partner under 14 occur
@@ -118,3 +112,10 @@ def us10(ged):
                                           .format(husband, wife, family['HUSB'], family['WIFE']))
 
     return output
+
+if __name__ == '__main__':
+    from ged import parse_ged
+
+    with open('test-us09.ged') as f:
+        parsed = parse_ged(f.read().split('\n'))
+        print(us09(parsed))
