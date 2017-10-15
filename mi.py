@@ -1,5 +1,5 @@
 from ged import compare_dates, date_difference
-from ged import compare_dates, date_difference
+
 #sprint 1: stories 5 and 10
 #sprint 2: stories 6 and 9
 
@@ -41,11 +41,11 @@ def us06(ged):
     for ID in ged['families']:
         family = ged['families'][ID]
         
-        #check for appropriate tags
-        if not 'HUSB' in family or not 'WIFE' in family or not 'DIV' in family or not 'DIV' in family:
+        #Ensure that each tag is present 'families'
+        if not 'HUSB' in family or not 'WIFE' in family or not 'DIV' in family:
             continue
 
-        #chech for Husb and Wife tags
+        #Search for HUSB or WIFE tag in family lib
         for person in ['HUSB','WIFE']:
 
             #check if family member is apart of lib for individuals
@@ -57,10 +57,9 @@ def us06(ged):
                     compare = compare_dates(family['DIV'], individual['DEAT'])
 
                     if compare == 1:
-                        out.append('Error US05: Death date of {} ({}) occurs before divorce date'
+                        out.append('Error US06: Divorce date of {} ({}) occurs before Death date'
                                    .format(individual['NAME'],family[person]))
     return out
-
 #Validation check to ensure birth date takes place before death date
 def us09(ged):
     out = []
@@ -114,8 +113,8 @@ def us10(ged):
 
     return output
 
-#if __name__ == '__main__':
-#    from ged import parse_ged
-#    with open('test-us09.ged') as f:
-#        parsed = parse_ged(f.read().split('\n'))
-#        print(us09(parsed))
+if __name__ == '__main__':
+    from ged import parse_ged
+    with open('test.ged') as f:
+        parsed = parse_ged(f.read().split('\n'))
+        print(us06(parsed))
