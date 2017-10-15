@@ -46,5 +46,11 @@ NOTE one generation of an imaginary family ~MF ~YL ~MM ~MC
 2 DATE 1 FEB 1800
 1 HUSB I19
 1 WIFE I26
-
+0 I28 INDI
+1 NAME John Smith
+1 BIRT
+2 DATE 9 SEP 1850
+1 SEX F
+1 DEAT
+2 DATE 13 MAR 2001
 
