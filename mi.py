@@ -65,16 +65,17 @@ def us06(ged):
 def us09(ged):
     out = []
 
-    #search for individuals stored in 'families'
+    #search for person stored in 'individuals'
     for ID in ged['individuals']:
         Ind = ged['individuals'][ID]
-        
-        #check for appropriate tags
+
+        #ensure death tag is present
         if not 'DEAT' in Ind:
             continue
 
-        #check for  tag
+        #find person with death tag
         for person in ['DEAT']:
+            
             #compare date stored for 'BIRT' with date for 'DEAT'
             compare = compare_dates(Ind['BIRT'], Ind['DEAT'])
             if compare == 1:
@@ -113,9 +114,8 @@ def us10(ged):
 
     return output
 
-if __name__ == '__main__':
-    from ged import parse_ged
-
-    with open('test-us09.ged') as f:
-        parsed = parse_ged(f.read().split('\n'))
-        print(us09(parsed))
+#if __name__ == '__main__':
+#    from ged import parse_ged
+#    with open('test-us09.ged') as f:
+#        parsed = parse_ged(f.read().split('\n'))
+#        print(us09(parsed))
