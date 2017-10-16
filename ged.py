@@ -205,6 +205,7 @@ def validate_ged(ged):
     if not 'individuals' in ged or not 'families' in ged:
         return
 
+    print(ged)
     out = []
 
     #check us02 and us04
@@ -232,6 +233,14 @@ def validate_ged(ged):
     out += mi.us06(ged)
     out += mi.us09(ged)
 
+    import mf
+    out += mf.US03(ged)
+    out += mf.US30(ged)
+    out += mf.US35(ged)
+    out += mf.US36(ged)
+
+
+	
     #---------------#
     # add code here #
     #---------------#
