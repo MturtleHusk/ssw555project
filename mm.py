@@ -71,3 +71,40 @@ def us23(ged):
             ids.append(id)
     
     return out
+
+#no more than 5 births at the same time
+def us14(ged):
+    out = []
+    store = {}
+
+    for id in ged['individuals']:
+        indi = ged['individuals'][id]
+
+        if not 'FAMC' in indi:
+            continue
+
+        cstr = '{} {}'.format(indi['FAMC'], indi['BIRT'])
+
+        if not cstr in store:
+            store[cstr] = 1
+        else:
+            store[cstr] += 1
+            
+            if store[cstr] > 5:
+                out.append('Anomaly US14: Family {} contains more than five siblings born on the same day'.format(indi['FAMC']))
+
+    return out
+
+#no more than 15 siblings in a single family
+def us15(ged):
+    out = []
+
+    for id in ged['families']:
+        fam = ged['families'][id]
+        if not 'CHIL' in fam:
+            continue
+        
+        if len(fam['CHIL']) > 15:
+            out.append('Anomaly US15: Family {} contains more than 15 siblings'.format(id))
+
+    return out

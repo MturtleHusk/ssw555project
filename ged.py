@@ -4,6 +4,7 @@ from prettytable import PrettyTable
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import traceback
+import re
 
 #All valid records. Format is [string level, string tag, string[] valid parent records]
 records = [
@@ -205,45 +206,22 @@ def validate_ged(ged):
     if not 'individuals' in ged or not 'families' in ged:
         return
 
-    print(ged)
     out = []
 
-    #check us02 and us04
-    import mm 
-    out += mm.us02(ged)
-    out += mm.us04(ged)
-    out += mm.us22(ged)
-    out += mm.us23(ged)
+    print(ged)
 
-    import yl
-    # check us17
-    out += yl.us17(ged)
-    # check us18
-    out += yl.us18(ged)
-    # check us07
-    out += yl.us07(ged)
-    # check us08
-    out += yl.us08(ged)
+    #Automatically run all functions in mm.py/yl.py/mi.py/mf.py that are in the form us##(ged):
+    import mm, yl, mi, mf
+    modules = [mm, yl, mi, mf]
 
-    #Sprint 1, check us05 and us10
-    import mi
-    out += mi.us05(ged)
-    out += mi.us10(ged)
-    #Sprint 2, check us06 and us09
-    out += mi.us06(ged)
-    out += mi.us09(ged)
-
-    import mf
-    out += mf.US03(ged)
-    out += mf.US30(ged)
-    out += mf.US35(ged)
-    out += mf.US36(ged)
-
-
-	
-    #---------------#
-    # add code here #
-    #---------------#
+    for module in modules:
+        for f in dir(module):
+            func = getattr(module, f)
+            if callable(func) and re.match('[uU][sS]\d\d', f):
+                try:
+                    out += func(ged)
+                except Exception as e:
+                    pass
 
     return out
 
