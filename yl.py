@@ -121,6 +121,79 @@ def us08(ged):
     return out
 
 
+# US16: All male members of a family should have the same last name
+def us16(ged):
+    out = []
+
+    for f_id, family in ged["families"].items():
+        # get all members in this family
+        members = [family["HUSB"], family["WIFE"]]
+        if "CHIL" in family:
+            members += family["CHIL"]
+
+        family_last_name = None
+        for m in members:
+            individual = ged["individuals"][m]
+            if individual["SEX"] != "M":
+                continue
+            last_name = individual["NAME"].split(" ")[-1]
+            if not family_last_name:
+                family_last_name = last_name
+                continue
+            if last_name == family_last_name:
+                continue
+            out.append("Anomaly US16: Not all male members of family {} have the same last name."
+                       .format(f_id))
+
+    return out
+
+
+# US20: Aunts and uncles should not marry their nieces or nephews
+def us20(ged):
+    out = []
+
+    # get parents
+    def get_parents(ind):
+        for _, family in ged["families"].items():
+            if ("CHIL" in family) and (ind in family["CHIL"]):
+                return [family["HUSB"], family["WIFE"]]
+        return None
+
+    # get aunts or uncles
+    def get_relatives(ind, relative):
+        conversion = {"aunts": "F", "uncles": "M"}
+        relatives = []
+
+        # find parents' sisters or brothers
+        parents = get_parents(ind)
+        if not parents:
+            return relatives
+        for parent in parents:
+            for _, family in ged["families"].items():
+                if ("CHIL" in family) and (parent in family["CHIL"]):
+                    for child in family["CHIL"]:
+                        if child == parent:
+                            continue
+                        if ged["individuals"][child]["SEX"] == conversion[relative]:
+                            relatives.append(child)
+
+        return relatives
+
+    for f_id, family in ged["families"].items():
+        husband = family["HUSB"]
+        wife = family["WIFE"]
+
+        if wife in get_relatives(husband, "aunts"):
+            out.append("Anomaly US20: {} ({}) marries her nephew {} ({})"
+                       .format(ged["individuals"][wife]["NAME"], wife, ged["individuals"][husband]["NAME"], husband))
+
+        if husband in get_relatives(wife, "uncles"):
+            out.append("Anomaly US20: {} ({}) marries his nieces {} ({})"
+                       .format(ged["individuals"][husband]["NAME"], husband, ged["individuals"][wife]["NAME"], wife))
+
+    return out
+
+
 def dates_within(dt1, dt2, limit, units):
 
     '''
