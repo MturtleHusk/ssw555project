@@ -1,3 +1,4 @@
+import datetime
 from ged import compare_dates, date_difference
 
 #sprint 1: stories 5 and 10
@@ -108,7 +109,7 @@ def us10(ged):
 
                     #14 years = 5110 days
                         if date_diff < 5110:
-                            output.append('Error US10: Marriage of {} and {} ({}, {}) occurs with a parter under age 14'
+                            output.append('Anomaly US10: Marriage of {} and {} ({}, {}) occurs with a parter under age 14'
                                           .format(husband, wife, family['HUSB'], family['WIFE']))
 
     return output
@@ -135,7 +136,7 @@ def us12(ged):
                 gap = date_difference(ind['BIRT'],found['BIRT'])
                 #80 years = 29200
                 if gap >= 29200:
-                    out.append('Error US12: Father {} ({}) is at least 80 years older than his child'
+                    out.append('Anomaly US12: Father {} ({}) is at least 80 years older than his child'
                                .format(ind['NAME'],fam['HUSB']))
 
         #find wife in family
@@ -147,7 +148,7 @@ def us12(ged):
                  gap = date_difference(ind['BIRT'], found['BIRT'])
                  #60 years = 21900 days
                  if gap >= 21900:
-                     out.append('Error US12: Mother {} ({}) is at least 60 years older than her child'
+                     out.append('Anomaly US12: Mother {} ({}) is at least 60 years older than her child'
                                 .format(ind['NAME'],fam['WIFE']))
     return out
 
@@ -164,14 +165,14 @@ def us21(ged):
                 ind = ged['individuals'][fam[person]]
                 #check husbands sex tag
                 if ind['SEX'] == 'F':
-                    out.append('Error US21: Gender of {} ({}) does not match family role'
+                    out.append('Anomaly US21: Gender of {} ({}) does not match family role'
                                    .format(ind['NAME'],fam['HUSB']))
         for person in ['WIFE']:
             if fam[person] in ged['individuals']:
                 ind = ged['individuals'][fam[person]]
                 #check wife's sex tag
                 if ind['SEX'] == 'M':
-                    out.append('Error US21: Gender of {} ({}) does not match family role'
+                    out.append('Anomaly US21: Gender of {} ({}) does not match family role'
                                    .format(ind['NAME'],fam['WIFE']))
                 
     return out
