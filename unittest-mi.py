@@ -20,7 +20,7 @@ class miTest(unittest.TestCase):
         	['Error US12: Father Alex /Jones/ (I01) is at least 80 years older than his child'])
 
     def test_us21(self):
-        self.assertEqual(mi.us21("testfiles/test-us12.ged"),
+        self.assertEqual(mi.us21("testfiles/test-us21.ged"),
         	['Error US21: Gender of Alex /Jones/ (I01) does not match family role', 'Error US21: Gender of Lacy /jones/ (I07) does not match family role'])       
 
 
