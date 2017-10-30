@@ -208,8 +208,6 @@ def validate_ged(ged):
 
     out = []
 
-    print(ged)
-
     #Automatically run all functions in mm.py/yl.py/mi.py/mf.py that are in the form us##(ged):
     import mm, yl, mi, mf
     modules = [mm, yl, mi, mf]
