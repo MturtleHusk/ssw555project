@@ -3,6 +3,69 @@ import ged
 from datetime import date
 from datetime import datetime
 
+#print upcomingBdays
+def US39(gedout):
+    retval = []
+    currdate = str(datetime.today().strftime('%d-%m-%Y'))
+    tcurrdate = str(currdate).split("-")
+
+    for key in gedout["families"]:
+        dt = gedout["families"][key]['MARR'];
+        tempD = manipulateDates(dt)
+
+        currdate = date(int(tcurrdate[2]), int(tcurrdate[1]), int(tcurrdate[0]))
+        tempD = date(int(tempD[2]), int(tempD[1]), int(tempD[0]))
+
+
+        delta = currdate - tempD
+
+        diff = delta.days
+
+        if diff <= 30 and diff > 0:
+            retval.append(key)
+
+
+    if len(retval) == 0:
+        retval.append("US39: no upcoming anniversaries")
+        return retval
+    else:
+        x = []
+        ret = "US39: upcoming anniversaries - "
+        for i in retval:
+            ret += i + " "
+        x.append(ret)
+        return x
+
+def US38(gedout):
+    retval = []
+    currdate = str(datetime.today().strftime('%d-%m-%Y'))
+    tcurrdate = str(currdate).split("-")
+
+    for key in gedout["individuals"]:
+        dt = gedout["individuals"][key]['BIRT'];
+        tempD = manipulateDates(dt)
+
+        currdate = date(int(tcurrdate[2]), int(tcurrdate[1]), int(tcurrdate[0]))
+        tempD = date(int(tempD[2]), int(tempD[1]), int(tempD[0]))
+        delta = currdate - tempD
+
+        diff = delta.days
+
+        if diff <= 30 and diff > 0:
+            retval.append(key)
+
+    if len(retval) == 0:
+        retval.append("US38: no upcoming birthdays")
+        return retval
+    else:
+        x = []
+        ret = "US38: upcoming birthdays - "
+        for i in retval:
+            ret += i + " "
+        x.append(ret)
+        return x
+
+
 #print married
 def US30(gedout):
 
@@ -84,7 +147,6 @@ def compareDates(bt, dt):
 
 # no birth before death
 def US03(gedout):
-
     badPeeps = []
     for key in gedout["individuals"]:
         if 'DEAT' in gedout["individuals"][key]:
@@ -123,10 +185,10 @@ def US35(gedout):
         tempD = date(int(tempD[2]), int(tempD[1]), int(tempD[0]))
         delta = currdate - tempD
 
-        print(currdate)
-        print(tempD)
+
+
         diff = delta.days
-        print(diff)
+
         if diff <= 30 and diff > 0:
             retval.append(key)
 
