@@ -1,4 +1,6 @@
 from ged import compare_dates
+from datetime import datetime, date
+from dateutil.relativedelta import relativedelta
 
 #marriage before birth
 def us02(ged):
@@ -108,3 +110,30 @@ def us15(ged):
             out.append('Anomaly US15: Family {} contains more than 15 siblings'.format(id))
 
     return out
+
+def us31_list(ged):
+    out = []
+
+    for indid in ged['individuals']:
+        indi = ged['individuals'][indid]
+        if 'DEAT' in indi:
+            continue
+
+        infam = False
+
+        for famid in ged['families']:
+            fam = ged['families'][famid]
+
+            if 'HUSB' in fam and fam['HUSB'] == indid \
+                or 'WIFE' in fam and fam['WIFE'] == indid:
+                infam = True
+                break
+
+        if not infam and 'BIRT' in indi :
+            bday_time = datetime.strptime(indi['BIRT'], "%d %b %Y")
+            age = relativedelta(datetime.combine(date.today(), datetime.min.time()), bday_time).years
+
+            if age > 30:
+                out.append('{} ({})'.format(ged['individuals'][indid]['NAME'], indid))
+    
+    return ['US31: Single individuals over 30 years of age:', out]

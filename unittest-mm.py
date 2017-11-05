@@ -1,5 +1,6 @@
 import unittest
 import mm
+from ged import pretty_print
 
 class TestMM(unittest.TestCase):
     def setUp(self):
@@ -301,6 +302,52 @@ class TestMM(unittest.TestCase):
                 } \
             ), \
             ['Anomaly US15: Family F01 contains more than 15 siblings'])
+    def test_us27(self):
+        self.assertEqual(
+            pretty_print(
+                { \
+                    'individuals': { \
+                        'I01': { \
+                            'NAME': 'Jeff /Johnson/', \
+                            'BIRT': '1 JAN 1950', \
+                            'SEX': 'M' \
+                        }, \
+                        'I02': { \
+                            'NAME': 'Joe /Johnson/', \
+                            'BIRT': '8 AUG 1960', \
+                            'SEX': 'M' \
+                        }, \
+                    }, \
+                    'families': {} \
+                } \
+            ,True), \
+            '''Individuals
++-----+----------------+--------+------------+-----+-------+-------+-------+--------+
+|  ID |      Name      | Gender |  Birthday  | Age | Alive | Death | Child | Spouse |
++-----+----------------+--------+------------+-----+-------+-------+-------+--------+
+| I01 | Jeff /Johnson/ |   M    | 1950-01-01 |  67 |  True |  N/A  |  N/A  |  N/A   |
+| I02 | Joe /Johnson/  |   M    | 1960-08-08 |  57 |  True |  N/A  |  N/A  |  N/A   |
++-----+----------------+--------+------------+-----+-------+-------+-------+--------+''')
+    def test_us31(self):
+        self.assertEqual(
+            mm.us31_list(
+                { \
+                    'individuals': { \
+                        'I01': { \
+                            'NAME': 'Jeff /Johnson/', \
+                            'BIRT': '1 JAN 1950', \
+                            'SEX': 'M' \
+                        }, \
+                        'I02': { \
+                            'NAME': 'Joe /Johnson/', \
+                            'BIRT': '8 AUG 1960', \
+                            'SEX': 'M' \
+                        }, \
+                    }, \
+                    'families': {} \
+                } \
+            ), \
+            ['US31: Single individuals over 30 years of age:', ['Jeff /Johnson/ (I01)', 'Joe /Johnson/ (I02)']])
 
 if __name__ == '__main__':
     unittest.main()

@@ -206,7 +206,8 @@ def validate_ged(ged):
     if not 'individuals' in ged or not 'families' in ged:
         return
 
-    out = []
+    ea = []
+    lists = []
 
     #Automatically run all functions in mm.py/yl.py/mi.py/mf.py that are in the form us##(ged):
     import mm, yl, mi, mf
@@ -215,20 +216,29 @@ def validate_ged(ged):
     for module in modules:
         for f in dir(module):
             func = getattr(module, f)
-            if callable(func) and re.match('[uU][sS]\d\d', f):
-                try:
-                    out += func(ged)
-                except Exception as e:
-                    pass
-
-    return out
+            if callable(func):
+                if re.match('[uU][sS]\d\d_list', f):
+                    print(f)
+                    try:
+                        lists.append(func(ged))
+                    except Exception as e:
+                        traceback.print_exc()
+                elif re.match('[uU][sS]\d\d', f):
+                    try:
+                        ea += func(ged)
+                    except Exception as e:
+                        pass
+                
+    return [ea, lists]
 
 
 
 
 
 #Pretty print the GEDCOM after parsing
-def pretty_print(gedout):
+def pretty_print(gedout, ret=False):
+    retval = ''
+
     if "individuals" in gedout and len(gedout["individuals"]) > 0:
         ix = PrettyTable(["ID", "Name", "Gender", "Birthday", "Age", "Alive", "Death", "Child", "Spouse"])
         rows = []
@@ -273,8 +283,11 @@ def pretty_print(gedout):
         for row in rows:
             ix.add_row(row)
 
-        print("Individuals")
-        print(ix)
+        if ret:
+            retval += '{}\n{}'.format('Individuals',ix)
+        else:
+            print("Individuals")
+            print(ix)
         
 
     if "families" in gedout and len(gedout["families"]) > 0:
@@ -329,9 +342,14 @@ def pretty_print(gedout):
         for row in rows:
             fx.add_row(row)
 
-        print('Families')
-        print(fx)
+        if ret:
+            retval += '\n{}\n{}'.format('Families', fx)
+        else:
+            print('Families')
+            print(fx)
 
+    if ret:
+        return retval
         
 
 #credit to dideler from https://gist.github.com/dideler/2395703
@@ -358,7 +376,10 @@ if __name__ == "__main__":
     if len(raw) > 0:
         rawlines = raw.split('\n')
         ged = parse_ged(rawlines)
-        errs = validate_ged(ged)
+        val = validate_ged(ged)
+
+        errs = val[0]
+        lists = val[1]
 
         pretty_print(ged)
         print('')
@@ -369,3 +390,11 @@ if __name__ == "__main__":
                 print(' ' + s)
         else:
             print('No errors/anomalies.')
+
+        if len(lists) > 0:
+            print('Lists:')
+            for l in lists:
+                if len(l[1]) > 0:
+                    print(' ' + l[0])
+                    for item in l[1]:
+                        print('  ' + item)
