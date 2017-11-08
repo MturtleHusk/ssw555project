@@ -62,6 +62,7 @@ def us06(ged):
                         out.append('Error US06: Divorce date of {} ({}) occurs after Death date'
                                    .format(individual['NAME'],family[person]))
     return out
+    
 #Validation check to ensure birth date takes place before death date
 def us09(ged):
     out = []
@@ -115,7 +116,8 @@ def us10(ged):
 
     return output
 
-
+#Mother should be less than 60 years older than her children
+#Father should be less than 80 years older than his children
 def us12(ged):
     
     out = []
@@ -153,6 +155,8 @@ def us12(ged):
                                 .format(ind['NAME'],fam['WIFE']))
     return out
 
+#Correct gender for family role
+#Husband in family should be male, wife should be female
 def us21(ged):
     out = []
     for ID in ged['families']:
