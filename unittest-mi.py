@@ -33,5 +33,17 @@ class miTest(unittest.TestCase):
                              ['Anomaly US21: Gender of Alex /Jones/ (I01) does not match family role', 'Anomaly US21: Gender of Lacy /jones/ (I07) does not match family role'])       
 
 
+
+     def test_us34(self):
+        with open ("testfiles/test-us29.ged") as f:
+            parsed = parse_ged(f.read().split('\n'))
+            self.assertEqual(mi.us21(parsed),
+                             ['US29: List of deceased individuals:', ['Alex /Jones/ (I01)', 'Lacy /jones/ (I07)']])
+
+     def test_us34(self):
+        with open ("testfiles/test-us34.ged") as f:
+            parsed = parse_ged(f.read().split('\n'))
+            self.assertEqual(mi.us21(parsed),
+                             ['US34: List couples married with one spouse twice the age of the other:', ['Alex /Jones/ and Lacy /jones/ (F23)']])
 if __name__ == '__main__':
     unittest.main()

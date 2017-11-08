@@ -4,6 +4,7 @@ from ged import compare_dates, date_difference
 #sprint 1: stories 5 and 10
 #sprint 2: stories 6 and 9
 #sprint 3: stories 12 and 21
+#sprint 4: stories 29 and 34
 
 #Validation check for Marriage date before death date
 #Individual cannot have died before they got married
@@ -176,6 +177,44 @@ def us21(ged):
                                    .format(ind['NAME'],fam['WIFE']))
                 
     return out
+
+#List deceased individuals
+def us29(ged):
+    out = []
+    for ID in ged['individuals']:
+        ind = ged['individuals'][ID]
+
+        if 'DEAT' in ind:
+            found = ged['individuals'][ID]['NAME']
+            out.append('{} ({})'.format(found, ID))
+
+    return ['US29: List of deceased individuals:', out]
+
+#List married couples with a spouse twice the age of the other
+def us34(ged):
+    out = []
+    curr_date = datetime.datetime.today().strftime("%d %b %Y")
+    
+    for ID in ged['families']:
+        family = ged['families'][ID]
+
+        if not family['HUSB'] in ged['individuals'] or not family['WIFE'] in ged['individuals']:
+            continue
+
+        husband = ged['individuals'][family['HUSB']]['BIRT'] 
+        wife = ged['individuals'][family['WIFE']]['BIRT'] 
+            
+        #check for a marriage
+        if husband is not None and wife is not None and 'MARR' in family:
+            hName = ged['individuals'][family['HUSB']]['NAME']
+            wName = ged['individuals'][family['WIFE']]['NAME']
+            husbAge = date_difference(husband, curr_date)
+            wifeAge = date_difference(wife, curr_date)
+            #If the age difference is bigger than either spuse's age, thenone age is twice as large
+            if abs(husbAge - wifeAge) > wifeAge or abs(husbAge - wifeAge)> husbAge:
+                out.append('{} and {} ({})'.format(hName,wName,ID))
+
+    return ['US34: List couples married with one spouse twice the age of the other:',out]
 
 #if __name__ == '__main__':
 #    from ged import parse_ged
