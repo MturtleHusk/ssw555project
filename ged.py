@@ -218,7 +218,6 @@ def validate_ged(ged):
             func = getattr(module, f)
             if callable(func):
                 if re.match('[uU][sS]\d\d_list', f):
-                    print(f)
                     try:
                         lists.append(func(ged))
                     except Exception as e:
@@ -394,7 +393,7 @@ if __name__ == "__main__":
         if len(lists) > 0:
             print('Lists:')
             for l in lists:
+                print(' ' + l[0])
                 if len(l[1]) > 0:
-                    print(' ' + l[0])
                     for item in l[1]:
                         print('  ' + str(item))

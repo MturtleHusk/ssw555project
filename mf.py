@@ -67,14 +67,14 @@ def US38(gedout):
 
 
 #print married
-def US30(gedout):
+def US30_list(gedout):
 
     couples = []
     for key in gedout["families"]:
         entry = gedout["families"][key]
         couples.append([ entry["HUSB"], entry["WIFE"]])
 
-    print(couples)
+    #print(couples)
 
     retval = "List of families \n"
     x = gedout["individuals"].__len__()
@@ -88,22 +88,12 @@ def US30(gedout):
                     if 'DEAT' in gedout["individuals"][key]:
                         couples.remove(fams)
 
-    print(couples)
+    #print(couples)
 
     if len(couples) == 0:
-        couples.append("US30: There are no married couples")
-        return couples
+        return ["US30: No married couples", []]
     else:
-        x = "US30: list of married couples - [  "
-        ret = []
-        for fams in couples:
-            x += "[ "
-            for peeps in fams:
-                x += peeps + " "
-            x += "] "
-        x += " ]"
-        ret.append(x)
-        return ret
+        return ["US30: list of married couples:", couples]
 
 def manipulateDates(dt):
     tempDT = dt.split(" ")
@@ -130,7 +120,7 @@ def compareDates(bt, dt):
         if tempDT[1] == months[i]:
             tempDT[1] = months[i - 1]
 
-            print(tempDT[0] +"-" + tempDT[1] + "-"+ tempDT[2])
+            #print(tempDT[0] +"-" + tempDT[1] + "-"+ tempDT[2])
 
     # compare years born
     if (int(tempBT[2]) > int(tempDT[2])):
