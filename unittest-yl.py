@@ -32,3 +32,19 @@ class TestYL(unittest.TestCase):
         ),
             ["Anomaly US20: Alex /Smith/ (I31) marries his nieces Jane /Smith/ (I18)"]
         )
+
+    def test_us19(self):
+        self.assertEqual(yl.us19(
+            ged.parse_ged(ged.read_ged("testfiles/test-us19.ged").split("\n"))
+        ),
+            ["Anomaly US19: Dick /Smith/ (I17) marries his first cousin Jane /Smith/ (I18)."]
+        )
+
+    def test_us28(self):
+        self.assertEqual(yl.us28_list(
+            ged.parse_ged(ged.read_ged("testfiles/test-us28.ged").split("\n"))
+        ),
+            ["US28: List siblings in families by decreasing age:",
+             [["F23", ["I19", "Dick /Smith/", "13 FEB 1981"], ["I26", "Jane /Smith/", "2 JUN 1983"]]]
+             ]
+        )

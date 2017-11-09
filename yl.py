@@ -1,30 +1,10 @@
 from datetime import date
 from datetime import datetime
 
+
 # US17: no marriage to descendant
 def us17(ged):
     out = []
-
-    # retrieve the children's IDs of the individual
-    def get_children(ind):
-        children = []
-        for f_id in ged["families"]:
-            f = ged["families"][f_id]
-            if f["HUSB"] != ind and f["WIFE"] != ind:
-                continue
-            if "CHIL" not in f:
-                continue
-            children += f["CHIL"]
-        return children
-
-    # retrieve the descendants' IDs of the individual
-    def get_descendants(ind):
-        descendants = [ind]
-        i = 0
-        while i < len(descendants):
-            descendants += get_children(descendants[i])
-            i += 1
-        return descendants
 
     for f_id in ged["families"]:
         # get the husband and wife ID
@@ -33,10 +13,10 @@ def us17(ged):
         wife_id = family["WIFE"]
 
         # check if the husband of wife is the descendant of another
-        if husband_id in get_descendants(wife_id):
+        if husband_id in get_descendants(ged, wife_id):
             out.append("Error US17: {} ({}) marries her descendants."
                        .format(ged["individuals"][wife_id]["NAME"], wife_id))
-        if wife_id in get_descendants(husband_id):
+        if wife_id in get_descendants(ged, husband_id):
             out.append("Error US17: {} ({}) marries his descendants."
                        .format(ged["individuals"][husband_id]["NAME"], husband_id))
 
@@ -47,29 +27,13 @@ def us17(ged):
 def us18(ged):
     out = []
 
-    # retrieve all the siblings' IDs of the individual
-    def get_siblings(ind):
-        siblings = []
-
-        for f_id in ged["families"]:
-            family = ged["families"][f_id]
-            if "CHIL" not in family:
-                continue
-            if ind in family["CHIL"]:
-                for child in family["CHIL"]:
-                    if child == ind:
-                        continue
-                    siblings.append(child)
-
-        return siblings
-
     for f_id in ged["families"]:
         # get the husband and wife ID
         family = ged["families"][f_id]
         husband_id = family["HUSB"]
         wife_id = family["WIFE"]
 
-        if husband_id in get_siblings(wife_id):
+        if is_siblings(ged, husband_id, wife_id):
             out.append("Error US18: {} ({}) should not marry {} ({}), because they are siblings."
                        .format(ged["individuals"][husband_id]["NAME"], husband_id,
                                ged["individuals"][wife_id]["NAME"], wife_id))
@@ -152,20 +116,13 @@ def us16(ged):
 def us20(ged):
     out = []
 
-    # get parents
-    def get_parents(ind):
-        for _, family in ged["families"].items():
-            if ("CHIL" in family) and (ind in family["CHIL"]):
-                return [family["HUSB"], family["WIFE"]]
-        return None
-
     # get aunts or uncles
     def get_relatives(ind, relative):
         conversion = {"aunts": "F", "uncles": "M"}
         relatives = []
 
         # find parents' sisters or brothers
-        parents = get_parents(ind)
+        parents = get_parents(ged, ind)
         if not parents:
             return relatives
         for parent in parents:
@@ -194,13 +151,109 @@ def us20(ged):
     return out
 
 
+# us19: First cousins should not marry one another
+def us19(ged):
+    out = []
+
+    for _, family, in ged["families"].items():
+        husband = family["HUSB"]
+        wife = family["WIFE"]
+
+        # get husband's and wife's parents
+        h_parents = get_parents(ged, husband)
+        w_parents = get_parents(ged, wife)
+
+        # check if one of husband's parents and one of wife's parents are siblings
+        if (not h_parents) or (not w_parents):
+            continue
+
+        if (is_siblings(ged, h_parents[0], w_parents[0])
+                or is_siblings(ged, h_parents[0], w_parents[1])
+                or is_siblings(ged, h_parents[1], w_parents[0])
+                or is_siblings(ged, h_parents[1], w_parents[1])):
+            out.append("Anomaly US19: {} ({}) marries his first cousin {} ({})."
+                       .format(ged["individuals"][husband]["NAME"], husband, ged["individuals"][wife]["NAME"], wife))
+
+    return out
+
+
+# us28: List siblings in families by decreasing age, i.e. oldest siblings first
+def us28_list(ged):
+    out = []
+
+    for f_id, family in ged["families"].items():
+        if "CHIL" not in family:
+            continue
+        children = []
+        for child in family["CHIL"]:
+            children.append([child, ged["individuals"][child]["NAME"], ged["individuals"][child]["BIRT"]])
+
+        children.sort(
+            key=lambda child: datetime.strptime(child[2], "%d %b %Y").date()
+        )
+        out.append([f_id] + children)
+
+    return ["US28: List siblings in families by decreasing age:", out]
+
+
+# check if two dates are in the given limitation
 def dates_within(dt1, dt2, limit, units):
-
-    '''
-    return True if dt1 and dt2 are within limit units, where:
-    dt1, dt2 are instances of datetime
-    limit is a number units is a string in ('days', 'months', 'years')
-    '''
-
-    conversion = {'days':1, 'months':30.4, 'years':365.25}
+    conversion = {'days': 1, 'months': 30.4, 'years': 365.25}
     return (abs((dt1 - dt2).days) / conversion[units]) <= limit
+
+
+# get parents
+def get_parents(ged, ind):
+    for _, family in ged["families"].items():
+        if ("CHIL" in family) and (ind in family["CHIL"]):
+            return [family["HUSB"], family["WIFE"]]
+    return None
+
+
+# retrieve the children's IDs of the individual
+def get_children(ged, ind):
+    children = []
+    for f_id in ged["families"]:
+        f = ged["families"][f_id]
+        if f["HUSB"] != ind and f["WIFE"] != ind:
+            continue
+        if "CHIL" not in f:
+            continue
+        children += f["CHIL"]
+    return children
+
+
+# retrieve the descendants' IDs of the individual
+def get_descendants(ged, ind):
+    descendants = [ind]
+    i = 0
+    while i < len(descendants):
+        descendants += get_children(ged, descendants[i])
+        i += 1
+    return descendants
+
+
+# retrieve all the siblings' IDs of the individual
+def get_siblings(ged, ind):
+    siblings = []
+
+    for f_id in ged["families"]:
+        family = ged["families"][f_id]
+        if "CHIL" not in family:
+            continue
+        if ind in family["CHIL"]:
+            for child in family["CHIL"]:
+                if child == ind:
+                    continue
+                siblings.append(child)
+
+    return siblings
+
+
+# check if two individuals are siblings
+def is_siblings(ged, ind1, ind2):
+    for _, family, in ged["families"].items():
+        if ("CHIL" in family) and (ind1 in family["CHIL"] and ind2 in family["CHIL"]):
+            return True
+
+    return False

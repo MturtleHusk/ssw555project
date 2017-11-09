@@ -183,7 +183,7 @@ def us21(ged):
     return out
 
 #List deceased individuals
-def us29(ged):
+def us29_list(ged):
     out = []
     for ID in ged['individuals']:
         ind = ged['individuals'][ID]
@@ -195,7 +195,7 @@ def us29(ged):
     return ['US29: List of deceased individuals:', out]
 
 #List married couples with a spouse twice the age of the other
-def us34(ged):
+def us34_list(ged):
     out = []
     curr_date = datetime.datetime.today().strftime("%d %b %Y")
     
