@@ -223,3 +223,140 @@ def US36(gedout):
             ret += i + " "
         x.append(ret)
         return x
+
+def doesDateneedModification(dt):
+    dt = dt.split(" ")
+    if dt.__len__() != 3:
+        return True
+    return False
+
+def canDateBeUsed(dt):
+    dt = dt.split(" ")
+    if dt.__len__() == 3:
+        return True
+    if dt.__len__() == 1: # must be year data only
+        try:
+            yr = int(dt[0])
+            return True
+        except ValueError:
+            return False
+    elif  dt.__len__() == 2: #must be a year and month only
+        try:
+            yr = int(dt[1])
+            months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+            if dt[0] in months:
+                return True
+            return False
+        except ValueError:
+            return False
+#fix any valid dates
+def fixDates(dt):
+    #if no day - make 10th day of month
+    #if no  month - mkae first month of year
+
+    dt = dt.split(" ")
+    if(dt.__len__() == 3):
+        return dt[0] + ' ' + dt[1] + ' ' + dt[2]
+    if(dt.__len__() == 1):
+        t = '10 JAN ' + dt[0]
+        return t
+    elif(dt.__len__() == 2):
+        t = '10 ' + dt[0] + ' ' + dt[1]
+        return t
+
+
+def US41_list(gedout):
+    fixedDates =[]
+    indvBD = []
+    famBD = []
+    for key in gedout["individuals"]:
+        if 'BIRT' in gedout["individuals"][key]:
+            if doesDateneedModification(gedout["individuals"][key]['BIRT']):
+                 indvBD.append([key, fixDates(gedout["individuals"][key]['BIRT'])])
+
+        if 'DEAT' in gedout["individuals"][key]:
+            if doesDateneedModification(gedout["individuals"][key]['DEAT']):
+                 indvBD.append([key, fixDates(gedout["individuals"][key]['DEAT'])])
+
+    for key in gedout["families"]:
+        if doesDateneedModification(gedout["families"][key]['MARR']):
+            famBD.append([key, fixDates(gedout["families"][key]['MARR'])])
+
+    if (indvBD.__len__() >0 or famBD.__len__() >0):
+        fixedDates.append('US41: All Dates Made Valid:')
+    if (indvBD.__len__() >0):
+        fixedDates.append(indvBD)
+
+    if (famBD.__len__() >0):
+        fixedDates.append(famBD)
+
+    if fixedDates.__len__() == 0:
+        fixedDates.append("US41: All Dates Already Valid")
+
+    return fixedDates;
+
+def isLeapYear(yr):
+    if (yr % 400) == 0:
+        return True
+    if (yr % 100) == 0:
+        return False
+    if (yr % 4) == 0:
+        return True
+    return False;
+
+def checkDates(date):
+    dayinMonths = ['31', "JAN", '31', "MAR",
+                   '30', "APR", '31', "MAY",
+                   '30', "JUN", '31', "JUL",
+                   '31', "AUG", '30', "SEP",
+                   '31', "OCT", '30', "NOV",
+                   '31', "DEC"]
+
+    tempDT = date.split(" ")
+    if tempDT[1] != "FEB":
+        for i in range(dayinMonths.__len__()):
+            if tempDT[1] == dayinMonths[i]:
+                if (int(tempDT[0]) > 0 and int(tempDT[0]) <= int(dayinMonths[i - 1])):
+                    return True
+
+    elif isLeapYear(int(tempDT[2])):
+        if (int(tempDT[0]) > 0 and int(tempDT[0]) <= 29):
+            return True
+    else:
+        if (int(tempDT[0]) > 0 and int(tempDT[0]) <= 28):
+            return True
+    return False
+
+
+#check all dates are allowed
+def US42_list(gedout):
+    badDates = []
+    indvBD = []
+    famBD = []
+    for key in gedout["individuals"]:
+        if 'BIRT' in gedout["individuals"][key]:
+            if checkDates(gedout["individuals"][key]['BIRT']) == False:
+                indvBD.append([key, gedout["individuals"][key]['BIRT']])
+
+        if 'DEAT' in gedout["individuals"][key]:
+            if checkDates(gedout["individuals"][key]['DEAT']) == False:
+                indvBD.append([key, gedout["individuals"][key]['DEAT']])
+
+    for key in gedout["families"]:
+        if checkDates(gedout["families"][key]['MARR']) == False:
+            famBD.append([key, gedout["families"][key]['MARR']])
+
+    if (indvBD.__len__() >0 or famBD.__len__() >0):
+        badDates.append('US42: Invalid dates:')
+    if (indvBD.__len__() >0):
+        badDates.append(indvBD)
+
+    if (famBD.__len__() >0):
+        badDates.append(famBD)
+
+    if (badDates.__len__() == 0):
+        badDates.append("US42: All Dates Valid")
+    return badDates
+
+
+
