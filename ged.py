@@ -394,6 +394,6 @@ if __name__ == "__main__":
             print('Lists:')
             for l in lists:
                 print(' ' + l[0])
-                if len(l[1]) > 0:
+                if len(l) == 2 and len(l[1]) > 0:
                     for item in l[1]:
                         print('  ' + str(item))
